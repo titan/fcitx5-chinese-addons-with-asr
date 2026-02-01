@@ -46,3 +46,23 @@ add_test(NAME testcustomphrase COMMAND testcustomphrase)
 add_executable(testsymboldictionary testsymboldictionary.cpp ../im/pinyin/symboldictionary.cpp)
 target_link_libraries(testsymboldictionary Fcitx5::Utils LibIME::Core)
 add_test(NAME testsymboldictionary COMMAND testsymboldictionary)
+
+# Audio capture test
+add_executable(testaudiocapture testaudiocapture.cpp ../im/voiceinput/audiocapture.cpp ../im/voiceinput/audiocapture.h)
+target_link_libraries(testaudiocapture Fcitx5::Core pulse-simple pulse asound)
+add_test(NAME testaudiocapture COMMAND testaudiocapture)
+
+# Volcengine recognizer test
+add_executable(testvolcenginerecognizer testvolcenginerecognizer.cpp ../im/voiceinput/volcenginerecognizer.cpp ../im/voiceinput/volcenginerecognizer.h)
+target_link_libraries(testvolcenginerecognizer Fcitx5::Core curl)
+add_test(NAME testvolcenginerecognizer COMMAND testvolcenginerecognizer)
+
+# Voice input integration test
+add_executable(testvoiceinputintegration testvoiceinputintegration.cpp)
+target_link_libraries(testvoiceinputintegration Fcitx5::Core)
+add_test(NAME testvoiceinputintegration COMMAND testvoiceinputintegration)
+
+# Table-Voice integration test
+add_executable(testtablevoiceintegration testtablevoiceintegration.cpp)
+target_link_libraries(testtablevoiceintegration Fcitx5::Core)
+add_test(NAME testtablevoiceintegration COMMAND testtablevoiceintegration)

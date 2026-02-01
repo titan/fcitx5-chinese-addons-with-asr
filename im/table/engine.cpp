@@ -47,6 +47,8 @@
 #include <map>
 #include <memory>
 #include <quickphrase_public.h>
+// Voice input integration
+#include "voiceinput.h"
 #include <string>
 #include <string_view>
 #include <unordered_set>
@@ -111,6 +113,23 @@ TableEngine::TableEngine(Instance *instance)
         preloadEvent_.reset();
         return true;
     });
+
+    // Initialize voice input manager
+    voiceInputManager_ = reinterpret_cast<VoiceInputManager *>(
+        instance_->addonManager().addon("voiceinput", true));
+    if (voiceInputManager_) {
+        // Pass configuration to voice input manager
+        voiceInputManager_->setConfig(
+            *config_.voiceInputAppId, *config_.voiceInputToken,
+            *config_.voiceInputCluster, *config_.voiceInputEnabled);
+        if (!voiceInputManager_->init()) {
+            FCITX_LOGC(voiceinput_logcategory, Warn)
+                << "Voice input manager initialization failed";
+        } else {
+            FCITX_LOGC(voiceinput_logcategory, Info)
+                << "Voice input manager loaded and initialized successfully";
+        }
+    }
 }
 
 TableEngine::~TableEngine() = default;
@@ -118,6 +137,13 @@ TableEngine::~TableEngine() = default;
 void TableEngine::reloadConfig() {
     readAsIni(config_, "conf/table.conf");
     populateConfig();
+
+    // Update voice input manager configuration
+    if (voiceInputManager_) {
+        voiceInputManager_->setConfig(
+            *config_.voiceInputAppId, *config_.voiceInputToken,
+            *config_.voiceInputCluster, *config_.voiceInputEnabled);
+    }
 }
 
 void TableEngine::populateConfig() {
@@ -234,6 +260,16 @@ void TableEngine::keyEvent(const InputMethodEntry &entry, KeyEvent &event) {
     FCITX_UNUSED(entry);
     TABLE_DEBUG() << "Table receive key: " << event.key() << " "
                   << event.isRelease();
+
+    // Route key events to voice input manager for SHIFT key detection
+    if (voiceInputManager_) {
+        voiceInputManager_->setInputContext(event.inputContext());
+        voiceInputManager_->handleKeyEvent(event);
+        if (event.accepted()) {
+            // Voice input handled this key event
+            return;
+        }
+    }
 
     auto *inputContext = event.inputContext();
     auto *state = inputContext->propertyFor(&factory_);

@@ -33,6 +33,8 @@
 #include <string>
 #include <vector>
 
+#include "voiceinput.h"
+
 namespace fcitx {
 
 class TableState;
@@ -79,9 +81,18 @@ FCITX_CONFIGURATION(
 
     Option<bool> predictionEnabled{this, "Prediction", _("Enable Prediction"),
                                    isAndroid()};
-    Option<int, IntConstrain> predictionSize{this, "PredictionSize",
-                                             _("Prediction Size"), 10,
-                                             IntConstrain(3, 100)};);
+    Option<int, IntConstrain> predictionSize{
+        this, "PredictionSize", _("Prediction Size"), 10, IntConstrain(3, 100)};
+
+    // Voice input configuration
+    Option<bool> voiceInputEnabled{this, "VoiceInputEnabled",
+                                   _("Enable Voice Input"), true};
+    Option<std::string> voiceInputAppId{this, "VoiceInputAppId",
+                                        _("Volcengine AppID"), ""};
+    Option<std::string> voiceInputToken{this, "VoiceInputToken",
+                                        _("Volcengine Token"), ""};
+    Option<std::string> voiceInputCluster{this, "VoiceInputCluster",
+                                          _("Volcengine Cluster ID"), ""};);
 
 class TableEngine final : public InputMethodEngine {
 public:
@@ -129,6 +140,7 @@ public:
     FCITX_ADDON_DEPENDENCY_LOADER(quickphrase, instance_->addonManager());
     FCITX_ADDON_DEPENDENCY_LOADER(pinyinhelper, instance_->addonManager());
     FCITX_ADDON_DEPENDENCY_LOADER(chttrans, instance_->addonManager());
+    FCITX_ADDON_DEPENDENCY_LOADER(voiceinput, instance_->addonManager());
 
 private:
     void cloudTableSelected(InputContext *inputContext,
@@ -153,6 +165,9 @@ private:
     bool pinyinLoaded_ = false;
     std::unique_ptr<libime::LanguageModel> pinyinLM_;
     std::unique_ptr<EventSource> preloadEvent_;
+
+    // Voice input integration
+    VoiceInputManager *voiceInputManager_ = nullptr;
 };
 
 } // namespace fcitx
