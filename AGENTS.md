@@ -71,6 +71,17 @@ When adding or modifying CMake install targets, follow these rules:
    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local ..
    ```
 
+### Important Note about `add_fcitx5_addon` Macro
+
+**Known Issue**: The `add_fcitx5_addon` macro (defined in fcitx5 Core) internally hardcodes `CMAKE_INSTALL_PREFIX="/usr/local"`. This cannot be modified directly without modifying fcitx5 itself.
+
+**Workaround**: Override the prefix by explicitly setting `CMAKE_INSTALL_PREFIX=/usr` when running CMake:
+```bash
+cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release ..
+```
+
+**Current Status**: The `im/voiceinput` module correctly uses `${CMAKE_INSTALL_LIBDIR}/fcitx5/` in its install command. However, without the `CMAKE_INSTALL_PREFIX=/usr` override, it will install to `/usr/local` due to the macro's hardcoded value.
+
 ### Verification
 
 After installation, verify with:
